@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>se.ifmo.ru</groupId>
-    <artifactId>labs</artifactId>
+    <artifactId>SOA</artifactId>
     <packaging>pom</packaging>
     <version>1.0</version>
 
-    <name>labs</name>
+    <name>SOA</name>
 
     <modules>
         <module>first-service</module>
