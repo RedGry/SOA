@@ -3,6 +3,7 @@ package se.ifmo.ru.firstservice.storage.repostitory.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import se.ifmo.ru.firstservice.exception.NotFoundException;
 import se.ifmo.ru.firstservice.service.model.Flat;
 import se.ifmo.ru.firstservice.service.model.View;
 import se.ifmo.ru.firstservice.storage.model.Filter;
@@ -164,10 +165,16 @@ public class FlatRepositoryImpl implements FlatRepository {
     @Override
     @Transactional
     public boolean deleteByView(View view) {
-        long id = (long) entityManager.createQuery("SELECT f.id FROM FlatEntity f WHERE f.view=:view")
-                .setParameter("view", view)
-                .setMaxResults(1)
-                .getSingleResult();
+        long id;
+
+        try {
+            id = (long) entityManager.createQuery("SELECT f.id FROM FlatEntity f WHERE f.view=:view")
+                    .setParameter("view", view)
+                    .setMaxResults(1)
+                    .getSingleResult();
+        } catch (NoResultException e){
+            throw new NotFoundException("Not Found");
+        }
 
         return entityManager.createQuery("DELETE FROM FlatEntity f WHERE f.id=:id")
                 .setParameter("id", id)
@@ -187,8 +194,8 @@ public class FlatRepositoryImpl implements FlatRepository {
     private Object getTypedFieldValue(String fieldName, String fieldValue) {
         if (Objects.equals(fieldName, "balcony")) {
             return Boolean.valueOf(fieldValue);
-        } else {
-            return fieldValue;
-        }
+        } else if (Objects.equals(fieldName, "view")) {
+            return View.fromValue(fieldValue);
+        } else return fieldValue;
     }
 }

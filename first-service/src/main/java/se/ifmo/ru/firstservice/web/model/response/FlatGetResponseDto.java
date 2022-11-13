@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class FlatGetResponseDto {
     @NotNull(message = "id - не может быть пустым!")
     @Size(min = 1, message = "id - должен быть больше 0!")
-    private long id;
+    private Long id;
     @NotNull(message = "name - не может быть пустым!")
     @NotBlank(message = "name - не может быть пустым!")
     private String name;
@@ -29,11 +29,11 @@ public class FlatGetResponseDto {
     @Size(min = 1, message = "area - должен быть больше 0!")
     private Integer area;
     @Size(min = 1, message = "numberOfRooms - должен быть больше 0!")
-    private long numberOfRooms;
+    private Long numberOfRooms;
     @Size(min = 1, message = "floor - должен быть больше 0!")
-    private int floor;
+    private Integer floor;
     @Size(min = 1, message = "timeToMetroOnFoot - должен быть больше 0!")
-    private int timeToMetroOnFoot;
+    private Integer timeToMetroOnFoot;
     @NotNull
     private Boolean balcony;
     private String view;

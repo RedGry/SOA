@@ -15,9 +15,9 @@ public class Flat {
     private Coordinates coordinates; //Поле не может быть null
     private java.time.LocalDateTime creationDate; //Поле не может быть null, Значение этого поля должно генерироваться автоматически
     private Integer area; //Поле может быть null, Значение поля должно быть больше 0
-    private long numberOfRooms; //Значение поля должно быть больше 0
-    private int floor; //Значение поля должно быть больше 0
-    private int timeToMetroOnFoot; //Значение поля должно быть больше 0
+    private Long numberOfRooms; //Значение поля должно быть больше 0
+    private Integer floor; //Значение поля должно быть больше 0
+    private Integer timeToMetroOnFoot; //Значение поля должно быть больше 0
     private Boolean balcony;
     private View view; //Поле может быть null
     private House house; //Поле может быть null

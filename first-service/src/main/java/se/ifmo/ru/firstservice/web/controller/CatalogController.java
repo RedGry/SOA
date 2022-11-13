@@ -80,6 +80,10 @@ public class CatalogController {
 
         Page<Flat> resultPage = flatService.getFlats(sort, filter, page, pageSize);
 
+        if (resultPage == null) {
+            return responseUtils.buildResponseWithMessage(HttpStatus.NOT_FOUND, "Not found");
+        }
+
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(new FlatListGetResponseDto(
@@ -111,12 +115,24 @@ public class CatalogController {
                 .body(flatMapper.toDto(flat));
     }
 
+    @PutMapping("/flats/{id}")
+    public ResponseEntity<?> updateFlate(@PathVariable("id") long id, @Valid @RequestBody FlatAddOrUpdateRequestDto requestDto){
+        Flat flat = flatService.updateFlat(id, requestDto);
+
+        if (flat == null){
+            return responseUtils.buildResponseWithMessage(HttpStatus.BAD_REQUEST, "Flat with id " + id + " not found!");
+        }
+
+        return ResponseEntity.ok()
+                .body(flatMapper.toDto(flat));
+    }
+
     @DeleteMapping("/flats/{id}")
     public ResponseEntity<?> deleteFlat(@PathVariable("id") long id){
         boolean deleted = flatService.deleteFlat(id);
 
         if (!deleted){
-            return responseUtils.buildResponseWithMessage(HttpStatus.BAD_REQUEST, "Flat with id " + id + " not found");
+            return responseUtils.buildResponseWithMessage(HttpStatus.NOT_FOUND, "Flat with id " + id + " not found");
         }
 
         return responseUtils.buildResponseWithMessage(HttpStatus.NO_CONTENT, "Flat with id " + id + " was successfully deleted");
@@ -124,7 +140,7 @@ public class CatalogController {
 
     @DeleteMapping("flats/delete-one-by-view/{view}")
     public ResponseEntity<?> deleteFlatByView(@PathVariable("view") String view){
-        boolean deleted = flatService.deleteOneFlatByView(View.fromValue(view));
+        boolean deleted = flatService.deleteOneFlatByView(View.fromValue(view.toLowerCase()));
 
         if (!deleted){
             return responseUtils.buildResponseWithMessage(HttpStatus.BAD_REQUEST, "Flat with view " + view + " not found");

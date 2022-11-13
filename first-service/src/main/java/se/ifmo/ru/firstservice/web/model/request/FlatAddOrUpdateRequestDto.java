@@ -18,11 +18,11 @@ public class FlatAddOrUpdateRequestDto {
     @Min(value = 1, message = "Area должен быть больше 0!")
     private Integer area;
     @Min(value = 1, message = "Number Of Rooms должен быть больше 0!")
-    private long numberOfRooms;
+    private Long numberOfRooms;
     @Min(value = 1, message = "Floor должен быть больше 0!")
-    private int floor;
+    private Integer floor;
     @Min(value = 1, message = "Time To Metro On Foot должен быть больше 0!")
-    private int timeToMetroOnFoot;
+    private Integer timeToMetroOnFoot;
     @NotNull(message = "Balcony не может быть null!")
     private Boolean balcony;
     private String view;
@@ -48,6 +48,6 @@ public class FlatAddOrUpdateRequestDto {
         @Min(value = 1, message = "House year должен быть больше 0!")
         private Long year;
         @Min(value = 1, message = "House number of floors должен быть больше 0!")
-        private int numberOfFloors;
+        private Integer numberOfFloors;
     }
 }

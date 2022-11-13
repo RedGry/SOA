@@ -37,13 +37,13 @@ public class FlatEntity {
     private Integer area;
 
     @Column(name = "number_of_rooms")
-    private long numberOfRooms;
+    private Long numberOfRooms;
 
     @Column(name = "floor")
-    private int floor;
+    private Integer floor;
 
     @Column(name = "time_to_metro_on_foot")
-    private int timeToMetroOnFoot;
+    private Integer timeToMetroOnFoot;
 
     @Column(name = "balcony")
     private Boolean balcony;
@@ -59,7 +59,7 @@ public class FlatEntity {
     private Long houseYear;
 
     @Column(name = "house_number_of_floors")
-    private int houseNumberOfFloors;
+    private Integer houseNumberOfFloors;
 
     @Column(name = "price")
     private Double price;

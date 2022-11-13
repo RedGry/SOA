@@ -27,9 +27,10 @@ import java.util.regex.Pattern;
 @Slf4j
 public class FlatServiceImpl implements FlatService {
 
-    private FlatRepositoryImpl flatDto;
-    private FlatMapper flatMapper;
+    private final FlatRepositoryImpl flatDto;
+    private final FlatMapper flatMapper;
 
+    @Autowired
     public FlatServiceImpl(FlatRepositoryImpl flatDto, FlatMapper flatMapper){
         this.flatDto = flatDto;
         this.flatMapper = flatMapper;
@@ -102,7 +103,9 @@ public class FlatServiceImpl implements FlatService {
                     }
                 }
 
-                fieldValue = matcher.group(3);
+                if (Objects.equals(fieldName, "view")){
+                    fieldValue = matcher.group(3).toLowerCase();
+                } else fieldValue = matcher.group(3);
             }
 
             if (StringUtils.isEmpty(fieldName)){
@@ -163,14 +166,17 @@ public class FlatServiceImpl implements FlatService {
         flatEntity.setNumberOfRooms(requestDto.getNumberOfRooms());
         flatEntity.setFloor(requestDto.getFloor());
         flatEntity.setTimeToMetroOnFoot(requestDto.getTimeToMetroOnFoot());
-        flatEntity.setView(View.valueOf(requestDto.getView()));
+        flatEntity.setView(View.fromValue(requestDto.getView().toLowerCase()));
 
         flatEntity.setCoordinatesX(requestDto.getCoordinates().getX());
         flatEntity.setCoordinatesY(requestDto.getCoordinates().getY());
 
-        flatEntity.setHouseName(requestDto.getHouse().getName());
-        flatEntity.setHouseYear(requestDto.getHouse().getYear());
-        flatEntity.setHouseNumberOfFloors(requestDto.getHouse().getNumberOfFloors());
+
+        if (requestDto.getHouse() != null) {
+            flatEntity.setHouseName(requestDto.getHouse().getName());
+            flatEntity.setHouseYear(requestDto.getHouse().getYear());
+            flatEntity.setHouseNumberOfFloors(requestDto.getHouse().getNumberOfFloors());
+        }
 
         flatEntity = flatDto.save(flatEntity);
 
