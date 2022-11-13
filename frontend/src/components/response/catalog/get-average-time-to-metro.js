@@ -6,7 +6,7 @@ import {Button} from "antd";
 import {SimpleResponseModal} from "../templates/simple-response-modal";
 
 export function GetAverageTimeToMetro(){
-    const {enqueueSnackbar, closeSnackbar} = useSnackbar();
+    const {enqueueSnackbar, closeSnackbar} = useSnackbar()
 
     const [modalVisible, setModalVisible] = useState(false)
     const [modalValue, setModalValue] = useState()
