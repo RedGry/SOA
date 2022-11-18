@@ -299,7 +299,7 @@ export default function FlatsTable({pageSize}){
                    onChange={handleTableChange}
                    loading={loading}
                    bordered={true}
-                   scroll={{x: true}}
+                   scroll={{x: 'max-content'}}
                    pagination={{
                        total: totalCount,
                        pageSize: pageSize,

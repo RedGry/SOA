@@ -1,5 +1,7 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const webpack = require('webpack')
+
 
 module.exports = {
     // Where files should be sent once they are bundled
@@ -30,5 +32,11 @@ module.exports = {
             }
         ]
     },
-    plugins: [new HtmlWebpackPlugin({template: './public/index.html'})]
+    plugins: [
+        new HtmlWebpackPlugin({template: './public/index.html'}),
+        new webpack.ProvidePlugin({
+            process: 'process/browser',
+        }),
+        new webpack.EnvironmentPlugin( { ...process.env } )
+    ]
 }

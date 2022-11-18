@@ -9,7 +9,7 @@ export function AgencyPage(){
     return (
         <>
             <Layout style={{minHeight: "100vh"}}>
-                <MyHeader/>
+                <MyHeader selectedMenuItem={'agency'}/>
                 <Content>
                     <Space style={{
                         marginTop: 50,

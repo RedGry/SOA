@@ -1,11 +1,12 @@
 import {useSnackbar} from "notistack";
 import {useState} from "react";
 import axios from "axios";
-import {Button, Form, Radio} from "antd";
+import {Button, Form, Radio, Switch} from "antd";
 import {InputNumber} from "antd/es";
 import {useForm} from "antd/es/form/Form";
 import {SimpleFlatResponseModal} from "../templates/simple-flat-response-modal";
 import {FIND_WITH_BALCONY, GET_MOST_EXPENSIVE} from "../../../utils/api";
+import {CheckOutlined, CloseOutlined} from "@ant-design/icons";
 
 export function FindWithBalcony(){
     const [form] = useForm()
@@ -40,7 +41,7 @@ export function FindWithBalcony(){
             <Form form={form}
                   onFinish={handelOpen}
                   layout={"inline"}
-                  labelCol={{span: 8}}
+                  labelCol={{span: 16}}
                   wrapperCol={{span: 8}}
             >
                 <Form.Item label={"Cheapest"}
@@ -48,22 +49,26 @@ export function FindWithBalcony(){
                            rules={[
                                {required: true, message: "Выберите дорогая ли квартира!"},
                            ]}
+                           initialValue={false}
                 >
-                    <Radio.Group style={{marginLeft: 20}}>
-                        <Radio value={true}>Да</Radio>
-                        <Radio value={false}>Нет</Radio>
-                    </Radio.Group>
+                    <Switch style={{marginLeft: 8}}
+                            checkedChildren={<CheckOutlined/>}
+                            unCheckedChildren={<CloseOutlined/>}
+                            defaultChecked={false}
+                    />
                 </Form.Item>
                 <Form.Item label={"With balcony"}
                            name={"with-balcony"}
                            rules={[
                                {required: true, message: "Выберите если ли балкон у квартиры!"},
                            ]}
+                           initialValue={false}
                 >
-                    <Radio.Group style={{marginLeft: 20}}>
-                        <Radio value={true}>Да</Radio>
-                        <Radio value={false}>Нет</Radio>
-                    </Radio.Group>
+                    <Switch style={{marginLeft: 8}}
+                            checkedChildren={<CheckOutlined/>}
+                            unCheckedChildren={<CloseOutlined/>}
+                            defaultChecked={false}
+                    />
                 </Form.Item>
                 <Form.Item>
                     <Button type={"primary"} onClick={form.submit} style={{width: 200}}>
