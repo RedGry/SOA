@@ -6,7 +6,6 @@ import se.ifmo.ru.secondservice.service.model.Flat;
 import se.ifmo.ru.secondservice.service.model.View;
 import se.ifmo.ru.secondservice.web.model.response.FlatGetResponseDto;
 
-import javax.ejb.Stateless;
 import java.util.List;
 
 @Mapper

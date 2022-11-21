@@ -1,15 +1,14 @@
 package se.ifmo.ru.secondservice.service.impl;
 
+import org.apache.commons.collections4.CollectionUtils;
 import se.ifmo.ru.secondservice.external.client.CatalogRestClient;
 import se.ifmo.ru.secondservice.mapper.FlatMapper;
 import se.ifmo.ru.secondservice.service.api.AgencyService;
 import se.ifmo.ru.secondservice.service.model.Flat;
-import org.apache.commons.collections4.CollectionUtils;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotFoundException;
 import java.util.List;
 
 @ApplicationScoped

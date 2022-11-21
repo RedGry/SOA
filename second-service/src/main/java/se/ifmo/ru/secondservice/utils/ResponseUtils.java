@@ -21,6 +21,7 @@ public class ResponseUtils {
                         .date(Instant.now().toString())
                         .build()
                 )
+                .type(MediaType.APPLICATION_JSON)
                 .build();
     }
 }
