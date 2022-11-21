@@ -1,4 +1,4 @@
-import {Descriptions, Modal, Typography} from "antd";
+import {Button, Descriptions, Modal, Typography} from "antd";
 
 
 export function SimpleFlatResponseModal({title, value, visible, handleOk}){
@@ -10,16 +10,26 @@ export function SimpleFlatResponseModal({title, value, visible, handleOk}){
 
     return (
         <>
-            <Modal>
+            <Modal open={visible}
+                   title={title}
+                   onCancel={handleOk}
+                   footer={[
+                       <Button type={"primary"} key={"submit"} onClick={handleOk}>
+                           Ок
+                       </Button>
+                   ]}
+                   width={1000}
+                   bordered
+            >
                 {
-                    value ? <Descriptions title={"Информация о квартире"}>
+                    value ? <Descriptions title={"Информация о квартире"} layout={"inline"}>
                         {getDescription("ID", value?.id)}
                         {getDescription("Name", value?.name)}
                         {getDescription("Area", value?.area)}
                         {getDescription("Number of rooms", value?.numberOfRooms)}
                         {getDescription("Floor", value?.floor)}
                         {getDescription("Time to metro on foot", value?.timeToMetroOnFoot)}
-                        {getDescription("Balcony", Boolean.toString(value?.balcony))}
+                        {getDescription("Balcony", value?.balcony.toString())}
                         {getDescription("View", value?.view)}
                         {getDescription("Price", value?.price)}
                         {getDescription("Coordinates X", value?.coordinates?.x)}

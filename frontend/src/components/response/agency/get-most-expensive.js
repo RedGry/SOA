@@ -6,6 +6,7 @@ import {InputNumber} from "antd/es";
 import {useForm} from "antd/es/form/Form";
 import {SimpleFlatResponseModal} from "../templates/simple-flat-response-modal";
 import {GET_MOST_EXPENSIVE} from "../../../utils/api";
+import {SimpleResponseModal} from "../templates/simple-response-modal";
 
 export function GetMostExpensive(){
     const [form] = useForm()
@@ -100,7 +101,7 @@ export function GetMostExpensive(){
                     </Button>
                 </Form.Item>
             </Form>
-            <SimpleFlatResponseModal title={"Самая дорогая квартира"}
+            <SimpleResponseModal title={"Самая дорогая квартира"}
                                      visible={modalVisible}
                                      value={modalValue}
                                      handleOk={handleModalOk}

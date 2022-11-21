@@ -154,7 +154,8 @@ export default function FlatsTable({pageSize}){
                             dataIndex: ["creationDate"],
                             key: "creationDate.time",
                             render: (text, row) => {
-                                return `${text[3]}:${text[4]}:${text[5]}`
+                                let date = text.split("T")[1].split(".")
+                                return `${date[0]}`
                             }
                         },
                         {
@@ -162,7 +163,8 @@ export default function FlatsTable({pageSize}){
                             dataIndex: ["creationDate"],
                             key: "creationDate.date",
                             render: (text, row) => {
-                                return `${text[2]}.${text[1]}.${text[0]}`
+                                let date = text.split("T")
+                                return `${date[0]}`
                             }
                         },
                         // {
