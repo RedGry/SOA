@@ -1,15 +1,20 @@
 package se.ifmo.ru.firstservice.web.model.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
 @Data
 @Builder
@@ -25,6 +30,7 @@ public class FlatGetResponseDto {
     @NotNull(message = "coordinates - не может быть пустым!")
     private FlatCoordinatesGetResponsesDto coordinates;
     @NotNull(message = "creationDate - не может быть пустым!")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
     private LocalDateTime creationDate;
     @Size(min = 1, message = "area - должен быть больше 0!")
     private Integer area;
