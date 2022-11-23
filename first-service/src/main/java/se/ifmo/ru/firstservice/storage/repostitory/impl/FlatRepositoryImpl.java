@@ -183,7 +183,13 @@ public class FlatRepositoryImpl implements FlatRepository {
 
     @Override
     public double averageTimeToMetro() {
-        return (double) entityManager.createQuery("SELECT AVG(f.timeToMetroOnFoot) FROM FlatEntity f").getSingleResult();
+        Object result = entityManager.createQuery("SELECT AVG(f.timeToMetroOnFoot) FROM FlatEntity f").getSingleResult();
+
+        if (result == null){
+            throw new NotFoundException("Таблица пуста, не удалось подсчитать результат!");
+        }
+
+        return (double) result;
     }
 
     @Override

@@ -27,6 +27,6 @@ public enum View {
         return Arrays.stream(View.values())
                 .filter(e -> Objects.equals(e.getValue(), value))
                 .findFirst()
-                .orElse(null);
+                .orElse(UNDEFINED);
     }
 }

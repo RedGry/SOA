@@ -70,6 +70,7 @@ public class MainControllerAdvice {
 
     @ExceptionHandler(Throwable.class)
     public ResponseEntity<Error> handleThrowable(Throwable e) {
+        e.printStackTrace();
         return responseUtils.buildResponseWithMessage(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
     }
 }

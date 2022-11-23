@@ -3,8 +3,6 @@ package se.ifmo.ru.secondservice.utils;
 import se.ifmo.ru.secondservice.web.model.Error;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.time.Instant;

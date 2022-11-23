@@ -22,7 +22,12 @@ export function UpdateFlatForm(){
                 if (response.data){
                     data = response.data
                 }
-                console.log(data)
+                if (data === undefined){
+                    enqueueSnackbar("Квартира не найдена!", {
+                        autoHideDuration: 2000,
+                        variant: "error"
+                    })
+                }
                 setInitialValues(data)
                 setIsUpdateFlatModalOpen(true)
                 setFlatId(e["id"])
@@ -85,7 +90,7 @@ export function UpdateFlatForm(){
                     </Button>
                 </Form.Item>
             </Form>
-            <FlatForm formVisible={isUpdateFlatModalOpen}
+            <FlatForm formVisible={isUpdateFlatModalOpen && initialValues !== undefined}
                       onCancel={handleUpdateFlatCancel}
                       onFinish={handleFormSubmit}
                       title={initialValues ? `Обновить квартиру с ID: ${flatId}` : "Добавить квартиру"}

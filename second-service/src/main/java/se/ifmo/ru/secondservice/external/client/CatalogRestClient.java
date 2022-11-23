@@ -27,7 +27,7 @@ import java.util.Objects;
 @Stateless
 public class CatalogRestClient {
     private Client client;
-    private final String serviceUrl = "http://localhost:45381/first-service/api/v1";
+    private final String serviceUrl = "https://localhost:45382/first-service/api/v1";
 
     public RestClientFlat getFlatById(long id){
         String url = serviceUrl + "/catalog/flats/" + id;
