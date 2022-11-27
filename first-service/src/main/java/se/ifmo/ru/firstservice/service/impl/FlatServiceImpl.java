@@ -2,8 +2,6 @@ package se.ifmo.ru.firstservice.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -15,8 +13,6 @@ import se.ifmo.ru.firstservice.storage.model.*;
 import se.ifmo.ru.firstservice.storage.repostitory.impl.FlatRepositoryImpl;
 import se.ifmo.ru.firstservice.web.model.request.FlatAddOrUpdateRequestDto;
 
-import javax.inject.Inject;
-import javax.ws.rs.BeanParam;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -64,16 +60,20 @@ public class FlatServiceImpl implements FlatService {
             for (String sort: sortsList){
                 boolean desc = sort.startsWith("-");
                 String sortFieldName = desc ? sort.split("-")[1] : sort;
+                String nestedName = null;
 
                 Matcher matcher = nestedFieldNamePattern.matcher(sortFieldName);
+
                 if (matcher.find()){
-                    String nestedField = matcher.group(2).substring(0, 1).toUpperCase() + matcher.group(2).substring(1);
-                    sortFieldName = matcher.group(1) + nestedField;
+                    String nestedField = matcher.group(2).substring(0, 1).toLowerCase() + matcher.group(2).substring(1);
+                    sortFieldName = matcher.group(1);
+                    nestedName = nestedField;
                 }
 
                 sorts.add(Sort.builder()
                         .desc(desc)
                         .fieldName(sortFieldName)
+                        .nestedName(nestedName)
                         .build()
                 );
             }
@@ -85,14 +85,16 @@ public class FlatServiceImpl implements FlatService {
             Matcher matcher = lhsPattern.matcher(filter);
             String fieldName = null, fieldValue = null;
             FilteringOperation filteringOperation = null;
+            String nestedName = null;
 
             if (matcher.find()){
                 fieldName = matcher.group(1);
 
                 Matcher nestedFieldMatcher = nestedFieldNamePattern.matcher(fieldName);
                 if (nestedFieldMatcher.find()){
-                    String nestedField = nestedFieldMatcher.group(2).substring(0, 1).toUpperCase() + nestedFieldMatcher.group(2).substring(1);
-                    fieldName = nestedFieldMatcher.group(1) + nestedField;
+                    String nestedField = nestedFieldMatcher.group(2).substring(0, 1).toLowerCase() + nestedFieldMatcher.group(2).substring(1);
+                    fieldName = nestedFieldMatcher.group(1);
+                    nestedName = nestedField;
                 }
 
                 filteringOperation = FilteringOperation.fromValue(matcher.group(2));
@@ -100,6 +102,12 @@ public class FlatServiceImpl implements FlatService {
                 if (Objects.equals(fieldName, "balcony")){
                     if (!Objects.equals(filteringOperation, FilteringOperation.EQ) && !Objects.equals(filteringOperation, FilteringOperation.NEQ)) {
                         throw new IllegalArgumentException("Only [eq] and [neq] operations are allowed for \"balcony\" field");
+                    }
+                }
+
+                if (Objects.equals(fieldName, "view")){
+                    if (!Objects.equals(filteringOperation, FilteringOperation.EQ) && !Objects.equals(filteringOperation, FilteringOperation.NEQ)) {
+                        throw new IllegalArgumentException("Only [eq] and [neq] operations are allowed for \"view\" field");
                     }
                 }
 
@@ -122,6 +130,7 @@ public class FlatServiceImpl implements FlatService {
 
             filters.add(Filter.builder()
                     .fieldName(fieldName)
+                    .nestedName(nestedName)
                     .fieldValue(fieldValue)
                     .filteringOperation(filteringOperation)
                     .build()
@@ -168,14 +177,25 @@ public class FlatServiceImpl implements FlatService {
         flatEntity.setTimeToMetroOnFoot(requestDto.getTimeToMetroOnFoot());
         flatEntity.setView(View.fromValue(requestDto.getView().toLowerCase()));
 
-        flatEntity.setCoordinatesX(requestDto.getCoordinates().getX());
-        flatEntity.setCoordinatesY(requestDto.getCoordinates().getY());
-
+        flatEntity.setCoordinates(
+                CoordinatesEntity
+                        .builder()
+                        .x(requestDto.getCoordinates().getX())
+                        .y(requestDto.getCoordinates().getY())
+                        .build()
+        );
 
         if (requestDto.getHouse() != null) {
-            flatEntity.setHouseName(requestDto.getHouse().getName());
-            flatEntity.setHouseYear(requestDto.getHouse().getYear());
-            flatEntity.setHouseNumberOfFloors(requestDto.getHouse().getNumberOfFloors());
+            flatEntity.setHouse(
+                    HouseEntity
+                            .builder()
+                            .name(requestDto.getHouse().getName())
+                            .year(requestDto.getHouse().getYear())
+                            .numberOfFloors(requestDto.getHouse().getNumberOfFloors())
+                            .build()
+            );
+        } else {
+            flatEntity.setHouse(null);
         }
 
         flatEntity = flatDto.save(flatEntity);

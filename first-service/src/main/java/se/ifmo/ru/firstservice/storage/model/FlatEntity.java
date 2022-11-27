@@ -1,20 +1,19 @@
 package se.ifmo.ru.firstservice.storage.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import se.ifmo.ru.firstservice.service.model.View;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "flat")
 @Data
+@Setter
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "flat")
+//@Table(name = "flat")
 public class FlatEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,11 +26,9 @@ public class FlatEntity {
     @Column(name = "creation_date")
     private LocalDateTime creationDate;
 
-    @Column(name = "coordinates_x")
-    private Integer coordinatesX;
-
-    @Column(name = "coordinates_y")
-    private Float coordinatesY;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "coordinates_id", referencedColumnName = "id", nullable = false)
+    private CoordinatesEntity coordinates;
 
     @Column(name = "area")
     private Integer area;
@@ -52,14 +49,9 @@ public class FlatEntity {
     @Enumerated(EnumType.STRING)
     private View view;
 
-    @Column(name = "house_name")
-    private String houseName;
-
-    @Column(name = "house_year")
-    private Long houseYear;
-
-    @Column(name = "house_number_of_floors")
-    private Integer houseNumberOfFloors;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "house_id", referencedColumnName = "id")
+    private HouseEntity house;
 
     @Column(name = "price")
     private Double price;

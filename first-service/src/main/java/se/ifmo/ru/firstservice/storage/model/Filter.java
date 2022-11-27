@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Filter {
     private String fieldName;
+    private String nestedName;
     private FilteringOperation filteringOperation;
     private String fieldValue;
 }

@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class Sort {
     private boolean desc;
     private String fieldName;
+    private String nestedName;
 }

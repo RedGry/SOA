@@ -19,11 +19,6 @@ public interface FlatMapper {
     List<FlatGetResponseDto> toGetResponseDtoList(List<Flat> source);
 
     @Mapping(target = "view", qualifiedByName = "viewConverter")
-    @Mapping(target = "coordinatesX", source = "requestDto.coordinates.x")
-    @Mapping(target = "coordinatesY", source = "requestDto.coordinates.y")
-    @Mapping(target = "houseName", source = "requestDto.house.name")
-    @Mapping(target = "houseYear", source = "requestDto.house.year")
-    @Mapping(target = "houseNumberOfFloors", source = "requestDto.house.numberOfFloors")
     FlatEntity fromFlatRequestDto(FlatAddOrUpdateRequestDto requestDto);
 
     default Flat fromEntity(FlatEntity entity){
@@ -36,8 +31,8 @@ public interface FlatMapper {
         flat.id(entity.getId());
         flat.name(entity.getName());
         flat.coordinates(Coordinates.builder()
-                .x(entity.getCoordinatesX())
-                .y(entity.getCoordinatesY())
+                .x(entity.getCoordinates().getX())
+                .y(entity.getCoordinates().getY())
                 .build()
         );
         flat.creationDate(entity.getCreationDate());
@@ -47,12 +42,15 @@ public interface FlatMapper {
         flat.timeToMetroOnFoot(entity.getTimeToMetroOnFoot());
         flat.balcony(entity.getBalcony());
         flat.view(entity.getView());
-        flat.house(House.builder()
-                        .name(entity.getHouseName())
-                        .year(entity.getHouseYear())
-                        .numberOfFloors(entity.getHouseNumberOfFloors())
-                        .build()
-        );
+
+        if (entity.getHouse() != null) {
+            flat.house(House.builder()
+                    .name(entity.getHouse().getName())
+                    .year(entity.getHouse().getYear())
+                    .numberOfFloors(entity.getHouse().getNumberOfFloors())
+                    .build()
+            );
+        }
         flat.price(entity.getPrice());
 
         return flat.build();

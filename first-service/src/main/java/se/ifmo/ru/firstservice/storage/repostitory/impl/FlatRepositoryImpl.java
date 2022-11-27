@@ -2,14 +2,10 @@ package se.ifmo.ru.firstservice.storage.repostitory.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import se.ifmo.ru.firstservice.exception.NotFoundException;
-import se.ifmo.ru.firstservice.service.model.Flat;
 import se.ifmo.ru.firstservice.service.model.View;
-import se.ifmo.ru.firstservice.storage.model.Filter;
+import se.ifmo.ru.firstservice.storage.model.*;
 import se.ifmo.ru.firstservice.storage.model.FlatEntity;
-import se.ifmo.ru.firstservice.storage.model.Page;
-import se.ifmo.ru.firstservice.storage.model.Sort;
 import se.ifmo.ru.firstservice.storage.repostitory.api.FlatRepository;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -48,7 +44,7 @@ public class FlatRepositoryImpl implements FlatRepository {
     @Override
     @Transactional
     public boolean deleteById(long id) {
-        return entityManager.createQuery("DELETE FROM FlatEntity f WHERE f.id=:id")
+        return entityManager.createQuery("DELETE FROM flat f WHERE f.id=:id")
                 .setParameter("id", id)
                 .executeUpdate() != 0;
     }
@@ -58,6 +54,7 @@ public class FlatRepositoryImpl implements FlatRepository {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<FlatEntity> flatQuery = criteriaBuilder.createQuery(FlatEntity.class);
         Root<FlatEntity> root = flatQuery.from(FlatEntity.class);
+
         CriteriaQuery<FlatEntity> select = flatQuery.select(root);
 
         List<Predicate> predicates = new ArrayList<>();
@@ -66,48 +63,97 @@ public class FlatRepositoryImpl implements FlatRepository {
             predicates = new ArrayList<>();
 
             for (Filter filter : filtersList){
+
                 switch (filter.getFilteringOperation()){
                     case EQ:
-                        predicates.add(criteriaBuilder.equal(
-                                        root.get(filter.getFieldName()),
-                                        getTypedFieldValue(filter.getFieldName(), filter.getFieldValue())
-                                )
-                        );
+                        if (filter.getNestedName() != null) {
+                            predicates.add(criteriaBuilder.equal(
+                                            root.get(filter.getFieldName()).get(filter.getNestedName()),
+                                            getTypedFieldValue(filter.getFieldName(), filter.getFieldValue())
+                                    )
+                            );
+                        } else {
+                            predicates.add(criteriaBuilder.equal(
+                                            root.get(filter.getFieldName()),
+                                            getTypedFieldValue(filter.getFieldName(), filter.getFieldValue())
+                                    )
+                            );
+                        }
                         break;
                     case NEQ:
-                        predicates.add(criteriaBuilder.notEqual(
-                                        root.get(filter.getFieldName()),
-                                        getTypedFieldValue(filter.getFieldName(), filter.getFieldValue())
-                                )
-                        );
+                        if (filter.getNestedName() != null) {
+                            predicates.add(criteriaBuilder.notEqual(
+                                            root.get(filter.getFieldName()).get(filter.getNestedName()),
+                                            getTypedFieldValue(filter.getFieldName(), filter.getFieldValue())
+                                    )
+                            );
+                        } else {
+                            predicates.add(criteriaBuilder.notEqual(
+                                            root.get(filter.getFieldName()),
+                                            getTypedFieldValue(filter.getFieldName(), filter.getFieldValue())
+                                    )
+                            );
+                        }
                         break;
                     case GT:
-                        predicates.add(criteriaBuilder.greaterThan(
-                                        root.get(filter.getFieldName()),
-                                        filter.getFieldValue()
-                                )
-                        );
+                        if (filter.getNestedName() != null) {
+                            predicates.add(criteriaBuilder.greaterThan(
+                                            root.get(filter.getFieldName()).get(filter.getNestedName()),
+                                            filter.getFieldValue()
+                                    )
+                            );
+                        } else {
+                            predicates.add(criteriaBuilder.greaterThan(
+                                            root.get(filter.getFieldName()),
+                                            filter.getFieldValue()
+                                    )
+                            );
+                        }
                         break;
                     case LT:
-                        predicates.add(criteriaBuilder.lessThan(
-                                        root.get(filter.getFieldName()),
-                                        filter.getFieldValue()
-                                )
-                        );
+                        if (filter.getNestedName() != null) {
+                            predicates.add(criteriaBuilder.lessThan(
+                                            root.get(filter.getFieldName()).get(filter.getNestedName()),
+                                            filter.getFieldValue()
+                                    )
+                            );
+                        } else {
+                            predicates.add(criteriaBuilder.lessThan(
+                                            root.get(filter.getFieldName()),
+                                            filter.getFieldValue()
+                                    )
+                            );
+                        }
                         break;
                     case GTE:
-                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                                        root.get(filter.getFieldName()),
-                                        filter.getFieldValue()
-                                )
-                        );
+                        if (filter.getNestedName() != null) {
+                            predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                            root.get(filter.getFieldName()).get(filter.getNestedName()),
+                                            filter.getFieldValue()
+                                    )
+                            );
+                        } else {
+                            predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                                            root.get(filter.getFieldName()),
+                                            filter.getFieldValue()
+                                    )
+                            );
+                        }
                         break;
                     case LTE:
-                        predicates.add(criteriaBuilder.lessThanOrEqualTo(
-                                        root.get(filter.getFieldName()),
-                                        filter.getFieldValue()
-                                )
-                        );
+                        if (filter.getNestedName() != null){
+                            predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                            root.get(filter.getFieldName()).get(filter.getNestedName()),
+                                            filter.getFieldValue()
+                                    )
+                            );
+                        } else {
+                            predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                                            root.get(filter.getFieldName()),
+                                            filter.getFieldValue()
+                                    )
+                            );
+                        }
                         break;
                     case UNDEFINED:
                         break;
@@ -122,9 +168,17 @@ public class FlatRepositoryImpl implements FlatRepository {
 
             for (Sort sortItem : sortList){
                 if (sortItem.isDesc()){
-                    orderList.add(criteriaBuilder.desc(root.get(sortItem.getFieldName())));
+                    if (sortItem.getNestedName() != null){
+                        orderList.add(criteriaBuilder.desc(root.get(sortItem.getFieldName()).get(sortItem.getNestedName())));
+                    } else {
+                        orderList.add(criteriaBuilder.desc(root.get(sortItem.getFieldName())));
+                    }
                 } else {
-                    orderList.add(criteriaBuilder.asc(root.get(sortItem.getFieldName())));
+                    if (sortItem.getNestedName() != null){
+                        orderList.add(criteriaBuilder.asc(root.get(sortItem.getFieldName()).get(sortItem.getNestedName())));
+                    } else {
+                        orderList.add(criteriaBuilder.asc(root.get(sortItem.getFieldName())));
+                    }
                 }
             }
             select.orderBy(orderList);
@@ -141,7 +195,7 @@ public class FlatRepositoryImpl implements FlatRepository {
             long countResult = 0;
 
             if (CollectionUtils.isNotEmpty(predicates)){
-                Query queryTotal = entityManager.createQuery("SELECT COUNT(f.id) FROM FlatEntity f");
+                Query queryTotal = entityManager.createQuery("SELECT COUNT(f.id) FROM flat f");
                 countResult = (long) queryTotal.getSingleResult();
             } else {
                 CriteriaBuilder qb = entityManager.getCriteriaBuilder();
@@ -168,7 +222,7 @@ public class FlatRepositoryImpl implements FlatRepository {
         long id;
 
         try {
-            id = (long) entityManager.createQuery("SELECT f.id FROM FlatEntity f WHERE f.view=:view")
+            id = (long) entityManager.createQuery("SELECT f.id FROM flat f WHERE f.view=:view")
                     .setParameter("view", view)
                     .setMaxResults(1)
                     .getSingleResult();
@@ -176,14 +230,14 @@ public class FlatRepositoryImpl implements FlatRepository {
             throw new NotFoundException("Not Found");
         }
 
-        return entityManager.createQuery("DELETE FROM FlatEntity f WHERE f.id=:id")
+        return entityManager.createQuery("DELETE FROM flat f WHERE f.id=:id")
                 .setParameter("id", id)
                 .executeUpdate() != 0;
     }
 
     @Override
     public double averageTimeToMetro() {
-        Object result = entityManager.createQuery("SELECT AVG(f.timeToMetroOnFoot) FROM FlatEntity f").getSingleResult();
+        Object result = entityManager.createQuery("SELECT AVG(f.timeToMetroOnFoot) FROM flat f").getSingleResult();
 
         if (result == null){
             throw new NotFoundException("Таблица пуста, не удалось подсчитать результат!");
@@ -194,7 +248,7 @@ public class FlatRepositoryImpl implements FlatRepository {
 
     @Override
     public List<String> getUniqueView() {
-        return entityManager.createQuery("SELECT DISTINCT f.view FROM FlatEntity f").getResultList();
+        return entityManager.createQuery("SELECT DISTINCT f.view FROM flat f").getResultList();
     }
 
     private Object getTypedFieldValue(String fieldName, String fieldValue) {
