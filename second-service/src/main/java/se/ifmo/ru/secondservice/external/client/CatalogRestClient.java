@@ -50,14 +50,19 @@ public class CatalogRestClient {
 
     public List<RestClientFlat> getAllFlats(){
         String url = serviceUrl + "/catalog/flats";
-        client = ClientBuilder.newClient();
 
-        Response response = client.target(url).request(MediaType.APPLICATION_JSON_TYPE).get();
+        try {
+            client = ClientBuilder.newClient();
 
-        FlatListGetResponseDto flats = response.readEntity(FlatListGetResponseDto.class);
+            Response response = client.target(url).request(MediaType.APPLICATION_JSON_TYPE).get();
 
-        client.close();
+            FlatListGetResponseDto flats = response.readEntity(FlatListGetResponseDto.class);
 
-        return flats.getFlatGetResponseDtos();
+            client.close();
+
+            return flats.getFlatGetResponseDtos();
+        } catch (ProcessingException e){
+            return null;
+        }
     }
 }
