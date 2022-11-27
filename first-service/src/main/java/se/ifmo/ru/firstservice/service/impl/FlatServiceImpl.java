@@ -40,7 +40,7 @@ public class FlatServiceImpl implements FlatService {
     public Page<Flat> getFlats(List<String> sortsList, List<String> filtersList, Integer page, Integer pageSize) {
         if (page != null || pageSize != null){
             if (page == null){
-                page = 0;
+                page = 1;
             }
             if (pageSize == null){
                 pageSize = 20;
@@ -185,21 +185,6 @@ public class FlatServiceImpl implements FlatService {
 
     @Override
     public Flat addFlat(FlatAddOrUpdateRequestDto requestDto) {
-//        FlatEntity flatEntity = FlatEntity.builder()
-//                .name(requestDto.getName())
-//                .area(requestDto.getArea())
-//                .price(requestDto.getPrice())
-//                .balcony(requestDto.getBalcony())
-//                .numberOfRooms(requestDto.getNumberOfRooms())
-//                .floor(requestDto.getFloor())
-//                .timeToMetroOnFoot(requestDto.getTimeToMetroOnFoot())
-//                .view(View.fromValue(requestDto.getView()))
-//                .coordinatesX(requestDto.getCoordinates().getX())
-//                .coordinatesY(requestDto.getCoordinates().getY())
-//                .houseName(requestDto.getHouse().getName())
-//                .houseYear(requestDto.getHouse().getYear())
-//                .houseNumberOfFloors(requestDto.getHouse().getNumberOfFloors())
-//                .build();
 
         FlatEntity flatEntity = flatMapper.fromFlatRequestDto(requestDto);
 

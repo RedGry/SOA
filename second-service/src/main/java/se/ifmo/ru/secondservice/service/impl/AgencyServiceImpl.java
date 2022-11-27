@@ -9,6 +9,7 @@ import se.ifmo.ru.secondservice.service.model.Flat;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotFoundException;
 import java.util.List;
 
 @ApplicationScoped
@@ -44,11 +45,11 @@ public class AgencyServiceImpl implements AgencyService {
                 }
             }
         } else {
-            throw new BadRequestException("Нет списка квартир :(");
+            throw new NotFoundException("Not found list of flats!");
         }
 
         if (bestFlat.getId() == null){
-            throw new BadRequestException("Не найдено подходящей квартиры :(");
+            throw new NotFoundException("No found suitable flat!");
         }
 
         return bestFlat;
@@ -58,17 +59,17 @@ public class AgencyServiceImpl implements AgencyService {
     public long getMostExpensiveFlat(long id1, long id2, long id3) {
         Flat flat1 = flatMapper.fromRestClient(catalogRestClient.getFlatById(id1));
         if (flat1 == null) {
-            throw new BadRequestException("Flat with id " + id1 + " not found");
+            throw new NotFoundException("Flat with id " + id1 + " not found");
         }
 
         Flat flat2 = flatMapper.fromRestClient(catalogRestClient.getFlatById(id2));
         if (flat2 == null) {
-            throw new BadRequestException("Flat with id " + id2 + " not found");
+            throw new NotFoundException("Flat with id " + id2 + " not found");
         }
 
         Flat flat3 = flatMapper.fromRestClient(catalogRestClient.getFlatById(id3));
         if (flat3 == null) {
-            throw new BadRequestException("Flat with id " + id3 + " not found");
+            throw new NotFoundException("Flat with id " + id3 + " not found");
         }
 
         return flat1.getPrice() >= flat2.getPrice() ?

@@ -29,6 +29,7 @@ export default function FlatForm({formVisible, onCancel, onFinish, title, initia
                                name={"name"}
                                rules={[
                                    {required: true, message: "Пожалуйста введите название!"},
+                                   {max: 255, message: "Максимальная длина 255!"},
                                ]}
                     >
                         <Input/>
@@ -176,6 +177,7 @@ export default function FlatForm({formVisible, onCancel, onFinish, title, initia
                                 name={["house", "name"]}
                                 rules={[
                                     {required: false, message: 'Пожалуйста введите название Дома!'},
+                                    {max: 255, message: "Максимальная длина 255!"},
                                 ]}
                             >
                                 <Input/>

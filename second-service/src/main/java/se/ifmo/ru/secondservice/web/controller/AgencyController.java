@@ -30,10 +30,15 @@ public class AgencyController {
 
     @GET
     @Path("/find-with-balcony/{cheapest}/{balcony}")
-    public Response getFlatWithBalcony(@PathParam("cheapest") boolean cheapest, @PathParam("balcony") boolean balcony){
-        return Response.ok()
-                .entity(flatMapper.toDto(agencyService.findFlatWithBalcony(cheapest, balcony)))
-                .build();
+    public Response getFlatWithBalcony(@PathParam("cheapest") String cheapest, @PathParam("balcony") String balcony){
+        if ((cheapest.equals("true") || cheapest.equals("false")) && (balcony.equals("true") || balcony.equals("false"))) {
+
+            return Response.ok()
+                    .entity(flatMapper.toDto(agencyService.findFlatWithBalcony(Boolean.parseBoolean(cheapest), Boolean.parseBoolean(balcony))))
+                    .build();
+        }
+
+        throw new IllegalArgumentException("Invalid parameters supplied");
     }
 
     @GET

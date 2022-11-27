@@ -100,7 +100,7 @@ public class CatalogController {
         Flat flat = flatService.getFlat(id);
 
         if (flat == null){
-            return null;
+            return responseUtils.buildResponseWithMessage(HttpStatus.NOT_FOUND, "Flat with id " + id + " not found");
         }
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -146,7 +146,7 @@ public class CatalogController {
             return responseUtils.buildResponseWithMessage(HttpStatus.BAD_REQUEST, "Flat with view " + view + " not found");
         }
 
-        return responseUtils.buildResponseWithMessage(HttpStatus.NO_CONTENT, "One Flat with view" + view + " was successfully deleted");
+        return responseUtils.buildResponseWithMessage(HttpStatus.NO_CONTENT, "One Flat with view " + View.fromValue(view.toLowerCase()).toString() + " was successfully deleted");
     }
 
     @GetMapping("flats/average-time-metro")

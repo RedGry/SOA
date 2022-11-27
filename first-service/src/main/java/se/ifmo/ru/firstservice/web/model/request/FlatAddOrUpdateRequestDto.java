@@ -12,6 +12,7 @@ import javax.validation.constraints.*;
 @Data
 public class FlatAddOrUpdateRequestDto {
     @NotBlank(message = "Name не может быть пустым!")
+    @Size(max = 255, message = "Name не может превышать длину 255 символов!")
     private String name;
     @NotNull(message = "Coordinates не может быть пустым!")
     private FlatCoordinatesAddRequestDto coordinates;
@@ -43,6 +44,7 @@ public class FlatAddOrUpdateRequestDto {
     @ToString
     public static class FlatHouseGetRequestDto {
         @NotNull(message = "House name не может быть null!")
+        @Size(max = 255, message = "Name не может превышать длину 255 символов!")
         private String name;
         @NotNull
         @Min(value = 1, message = "House year должен быть больше 0!")

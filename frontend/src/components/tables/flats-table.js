@@ -138,7 +138,7 @@ export default function FlatsTable({pageSize}){
                     key: "name",
                     sorter: {multiple: 4},
                     sortDirections: ["ascend", "descend"],
-                    fixed: "left",
+                    // fixed: "left",
                     ...getColumnSearchProps("name", handleFilterChange)
                 },
                 {
