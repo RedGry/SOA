@@ -1,6 +1,6 @@
 drop table flat;
 
-create table flat
+create table flats
 (
     id                     bigserial primary key,
     name                   text                   not null,
@@ -19,6 +19,9 @@ create table flat
     price                  double precision       not null
 );
 
-insert into flat values (default, 'test', '2016-06-22 19:10:25-07', 1, 1.0, 2, 3, 5, 100, True, 'STREET', 'houseTest', 2000, 2, 132.3);
+insert into flats values (default, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', '2016-06-22 19:10:25-07', 1, 1.0, 2, 3, 5, 100, True, 'STREET', 'houseTest', 2000, 2, 132.3);
+
+ALTER TABLE flat
+    ALTER COLUMN name TYPE text;
 
 select * from flat;
