@@ -21,10 +21,11 @@ import java.util.Objects;
 @Component
 public class FlatRepositoryImpl implements FlatRepository {
 
-    @PersistenceContext(type = PersistenceContextType.EXTENDED)
+    @PersistenceContext
     private EntityManager entityManager;
 
     @Override
+    @Transactional
     public FlatEntity findById(long id) {
         return entityManager.find(FlatEntity.class, id);
     }
