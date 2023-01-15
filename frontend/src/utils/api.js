@@ -1,8 +1,8 @@
 // const CATALOG_SERVICE = "http://localhost:41147/catalog"
 // const AGENCY_SERVICE = "http://localhost:41148/agency"
 
-const CATALOG_SERVICE = "https://localhost:45012/api/v1/catalog"
-const AGENCY_SERVICE = "https://localhost:46012/api/v1/agency"
+const CATALOG_SERVICE = "https://localhost:4500/api/v1/catalog"
+const AGENCY_SERVICE = "https://localhost:4600/api/v1/agency"
 
 export const FLATS_API = `${CATALOG_SERVICE}/flats`
 export const DELETE_ONE_FLAT_BY_VIEW = `${FLATS_API}/delete-one-by-view`
