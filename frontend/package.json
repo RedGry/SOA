@@ -38,6 +38,7 @@
     "start-webpack": "webpack serve --mode development",
     "build": "react-scripts build",
     "deploy": "react-scripts build && ssh -p2222 s284261@helios.se.ifmo.ru rm -rf ~/public_html/soa-front && scp -P 2222 -r \"H:/1/ITMO/4 Курс/СОА/SOA2/frontend/build\" s284261@helios.se.ifmo.ru:~/public_html/soa-front && start https://se.ifmo.ru/~s284261/soa-front/",
+    "deploy-laptop": "react-scripts build && ssh -p2222 s284261@helios.se.ifmo.ru rm -rf ~/public_html/soa-front && scp -P 2222 -r \"D:/ITMO/4 year/СОА/SOA/frontend/build\" s284261@helios.se.ifmo.ru:~/public_html/soa-front && start https://se.ifmo.ru/~s284261/soa-front/",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

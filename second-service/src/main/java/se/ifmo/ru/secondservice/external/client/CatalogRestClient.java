@@ -1,28 +1,15 @@
 package se.ifmo.ru.secondservice.external.client;
 
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import lombok.Value;
 import se.ifmo.ru.secondservice.external.model.FlatListGetResponseDto;
 import se.ifmo.ru.secondservice.external.model.RestClientFlat;
-import se.ifmo.ru.secondservice.web.model.response.FlatGetResponseDto;
 
 import javax.ejb.Stateless;
-import javax.enterprise.context.Initialized;
-import javax.servlet.http.HttpServlet;
-import javax.ws.rs.ClientErrorException;
-import javax.ws.rs.Path;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.http.HttpClient;
-import java.net.http.HttpConnectTimeoutException;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 @Stateless
 public class CatalogRestClient {
@@ -40,9 +27,10 @@ public class CatalogRestClient {
 
             client.close();
 
-            return flat;
+            return flat.getId() == null ? null : flat;
 
         } catch (ProcessingException e) {
+            e.printStackTrace();
             return null;
         }
 
@@ -62,6 +50,7 @@ public class CatalogRestClient {
 
             return flats.getFlatGetResponseDtos();
         } catch (ProcessingException e){
+            e.printStackTrace();
             return null;
         }
     }

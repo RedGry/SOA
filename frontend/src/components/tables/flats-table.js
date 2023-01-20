@@ -223,7 +223,7 @@ export default function FlatsTable({pageSize}){
                     sorter: {multiple: 3},
                     sortDirections: ["ascend", "descend"],
                     render: (text, record) => (
-                        <Tag color={text ? 'green' : 'volcano'}>
+                        <Tag color={text === 'true' ? 'green' : 'volcano'}>
                             {text.toString()}
                         </Tag>
                     ),

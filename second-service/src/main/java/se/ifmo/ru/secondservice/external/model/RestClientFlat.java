@@ -13,7 +13,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @Data
 @Builder
@@ -29,7 +28,7 @@ public class RestClientFlat {
     @NotNull(message = "coordinates - не может быть пустым!")
     private RestClientFlatCoordinates coordinates;
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private LocalDateTime creationDate;
     @Size(min = 1, message = "area - должен быть больше 0!")
     private Integer area;
