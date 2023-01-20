@@ -1,0 +1,672 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="9d8cbfb9-9b7f-406f-a15f-09d3654fbe2c" basePath="/api/v1">
+		<http:listener-connection host="0.0.0.0" port="45382" protocol="HTTPS">
+			<tls:context >
+				<tls:key-store type="jks" path="server.keystore" alias="localhost" keyPassword="secret" password="secret" />
+			</tls:context>
+		</http:listener-connection>
+	</http:listener-config>
+	<wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="2aae44c3-252b-49f2-883d-82830aace35d" >
+		<wsc:connection wsdlLocation="http://localhost:45011/api/v1/ws/schema.wsdl" service="SchemaPortService" port="SchemaPortSoap11" address="http://localhost:45011/api/v1/ws" >
+			<wsc:web-service-security actor="http://schemas.xmlsoap.org/soap/actor/next" />
+		</wsc:connection>
+	</wsc:config>
+	<flow name="getFlats" doc:id="b5e3509b-859e-4113-bd52-0dbf1f70abd3" >
+		<http:listener doc:name="Listener" doc:id="20f345c9-b045-49e1-b7ad-8ac03fc5269e" config-ref="HTTP_Listener_config" path="/catalog/flats" allowedMethods="GET">
+			<http:response >
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:response>
+			<http:error-response >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:error-response>
+
+		</http:listener>
+		<ee:transform doc:name="Transform Message" doc:id="efad8454-f61b-4040-9410-71f377daf7b4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/xml skipNullOn="everywhere"
+ns ns0 http://se/ifmo/ru/firstservice/catalog
+---
+{
+	ns0#getFlatsRequest: {
+		ns0#sort: attributes.queryParams.sort,
+		ns0#filter: attributes.queryParams.filter,
+		ns0#page: attributes.queryParams.page,
+		ns0#pageSize: attributes.queryParams.pageSize
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<wsc:consume operation="getFlats" doc:name="Consume" doc:id="ada450be-d7fd-4e4b-9c74-f78435a6824b" config-ref="Web_Service_Consumer_Config"/>
+		<logger level="INFO" doc:name="Logger" doc:id="c334ba8a-6d6b-499d-ba85-0ca8332067b9" />
+		<ee:transform doc:name="Transform Message" doc:id="0f723e02-f640-4658-95a4-e45318bddaaf" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0ns ns0 http://se/ifmo/ru/firstservice/catalog
+
+output application/json
+---
+{
+	"flatGetResponseDtos": payload.body.ns0#getFlatsResponse.*ns0#flatGetResponseDtos map (item, index) -> item,	"page": payload.body.ns0#getFlatsResponse.ns0#page,	"pageSize": payload.body.ns0#getFlatsResponse.ns0#pageSize,	"totalPages": payload.body.ns0#getFlatsResponse.ns0#totalPages,	"totalCount": payload.body.ns0#getFlatsResponse.ns0#totalCount
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="e923a3ba-e28d-4df7-81c2-8c515c2eed78" type="ANY">
+				<ee:transform doc:name="Transform Message" doc:id="b03f6a6d-1e46-476f-9854-60ae4ed787a3">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+
+var detail = read(error.exception.cause.detail, "application/xml")
+---
+{
+	"code": detail.detail.code,
+	"message": detail.detail.description,
+	"time": now()
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="3eb508eb-c552-4a6b-9dd4-98e9f21438dd" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="getFlat" doc:id="9201d069-0652-4144-9765-4f2222783978" >
+		<http:listener doc:name="Listener" doc:id="f046237e-5982-4f15-9867-fecd7f217ab4" config-ref="HTTP_Listener_config" path="/catalog/flats/{id}" allowedMethods="GET">
+			<http:response>
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:response>
+			<http:error-response >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:error-response>
+		</http:listener>
+		<ee:transform doc:name="Transform Message" doc:id="f03a3ae8-dcf0-4d35-bd6b-bd6412584b1f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/xml skipNullOn="everywhere"
+ns ns0 http://se/ifmo/ru/firstservice/catalog
+---
+{
+	ns0#getFlatRequest: {
+		ns0#id: attributes.uriParams.id
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<wsc:consume doc:name="Consume" doc:id="4f8a88e3-25ee-49e9-9346-4e02249bf7e6" config-ref="Web_Service_Consumer_Config" operation="getFlat"/>
+		<logger level="INFO" doc:name="Logger" doc:id="783bb020-e433-427e-ba64-7d38138a1c26" />
+		<ee:transform doc:name="Transform Message" doc:id="d72bafff-3ee5-482c-9ddd-dd976c512a9f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+ns ns0 http://se/ifmo/ru/firstservice/catalog
+
+output application/json
+---
+payload.body.ns0#getFlatResponse.ns0#flat]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="93847e69-586a-45a3-84ce-0cb7fcf28114" type="ANY" >
+				<ee:transform doc:name="Transform Message" doc:id="cad4d410-3c04-40b6-9668-219378dad1bb" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var detail = read(error.exception.cause.detail, "application/xml")
+---
+{
+	"code": detail.detail.code,
+	"message": detail.detail.description,
+	"time": now()
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="7f45ac28-5ecb-4d6c-9169-d9cf91a7db08" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="addFlat" doc:id="1fac3ca2-8444-40d2-8320-7a854e1f686b" >
+		<http:listener doc:name="Listener" doc:id="4d1ae24a-0fff-49dd-bac1-c4688bed06c0" config-ref="HTTP_Listener_config" path="/catalog/flats" allowedMethods="POST">
+			<http:response >
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:response>
+			<http:error-response >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:error-response>
+		</http:listener>
+		<ee:transform doc:name="Transform Message" doc:id="018555c9-9ad1-4e9c-bdf2-fd7128c6eedd" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/xml skipNullOn="everywhere"
+ns ns0 http://se/ifmo/ru/firstservice/catalog
+---
+{
+	ns0#addFlatRequest: {
+		ns0#name: payload.name,
+		ns0#coordinates: {
+			ns0#x: payload.coordinates.x,
+			ns0#y: payload.coordinates.y
+		},
+		ns0#area: payload.area,
+		ns0#numberOfRooms: payload.numberOfRooms,
+		ns0#floor: payload.floor,
+		ns0#timeToMetroOnFoot: payload.timeToMetroOnFoot,
+		ns0#view: payload.view,
+		ns0#balcony: payload.balcony,
+		ns0#price: payload.price,
+		ns0#house: {
+			ns0#name: payload.house.name,
+			ns0#year: payload.house.year,
+			ns0#numberOfFloors: payload.house.numberOfFloors
+		},
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<wsc:consume doc:name="Consume" doc:id="16a5e860-4e78-4706-8db3-37ba47ccbc90" config-ref="Web_Service_Consumer_Config" operation="addFlat"/>
+		<ee:transform doc:name="Transform Message" doc:id="c017e417-ea62-455e-b8ff-5544953ca837" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+ns ns0 http://se/ifmo/ru/firstservice/catalog
+
+output application/json
+---
+payload.body.ns0#addFlatResponse.ns0#flat]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="909f3dc3-645d-452b-8f5d-ca7356038a84" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="60b33a7a-398e-400b-acae-261ea9395794" type="ANY" >
+				<ee:transform doc:name="Transform Message" doc:id="d0dcb0c4-31f2-4bfa-82b2-c31990252650" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var detail = read(error.exception.cause.detail, "application/xml")
+---
+{
+	"code": detail.detail.code,
+	"message": detail.detail.description,
+	"time": now()
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="9202e860-7667-439e-86db-31fa406130b5" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="updateFlat" doc:id="4470f084-fb19-4aea-a284-ef2e0e660cc4" >
+		<http:listener doc:name="Listener" doc:id="ffb0f17a-6f2c-4ac3-865d-9e712845422a" config-ref="HTTP_Listener_config" path="/catalog/flats/{id}" allowedMethods="PUT">
+			<http:response >
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "*",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:response>
+			<http:error-response >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<ee:transform doc:name="Transform Message" doc:id="d2e67fcb-d809-4668-b8eb-922deee0f651" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/xml skipNullOn="everywhere"
+ns ns0 http://se/ifmo/ru/firstservice/catalog
+---
+{
+	ns0#updateFlatRequest: {
+		ns0#id: attributes.uriParams.id,
+		ns0#flat: {
+			ns0#name: payload.name,
+			ns0#coordinates: {
+				ns0#x: payload.coordinates.x,
+				ns0#y: payload.coordinates.y
+			},
+			ns0#area: payload.area,
+			ns0#numberOfRooms: payload.numberOfRooms,
+			ns0#floor: payload.floor,
+			ns0#timeToMetroOnFoot: payload.timeToMetroOnFoot,
+			ns0#view: payload.view,
+			ns0#balcony: payload.balcony,
+			ns0#price: payload.price,
+			ns0#house: {
+				ns0#name: payload.house.name,
+				ns0#year: payload.house.year,
+				ns0#numberOfFloors: payload.house.numberOfFloors
+			}
+		}
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<wsc:consume operation="updateFlat" doc:name="Consume" doc:id="62435469-d3e0-4252-8813-20c0e5f20666" config-ref="Web_Service_Consumer_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="983689e3-59bb-4f1a-85e9-b7d207290956" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+ns ns0 http://se/ifmo/ru/firstservice/catalog
+
+output application/json
+---
+payload.body.ns0#updateFlatResponse.ns0#flat]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="b978d49b-2df8-4012-8759-89ecb8b05739" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="f364048c-ce4a-45c9-8b2a-fbcea91cf6d0" type="ANY" >
+				<ee:transform doc:name="Transform Message" doc:id="edc72410-53de-42df-ab80-5be3304217be" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var detail = read(error.exception.cause.detail, "application/xml")
+---
+{
+	"code": detail.detail.code,
+	"message": detail.detail.description,
+	"time": now()
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="4a7a7f09-b523-41a3-8012-56edd3fc9884" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="catalogFlatsOptions" doc:id="da717513-1a40-43aa-817c-3b857ef442d5" >
+		<http:listener doc:name="Listener" doc:id="27b9dbe9-16e9-4766-a761-c2cde4c3b499" config-ref="HTTP_Listener_config" path="/catalog/flats" allowedMethods="OPTIONS">
+			<http:response >
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:response>
+		</http:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="acdd498c-052f-49c0-a553-29e74d1ba72c" />
+	</flow>
+	<flow name="deleteFlat" doc:id="f6c61fea-5f9d-4a66-95e9-11a27946ff79" >
+		<http:listener doc:name="Listener" doc:id="27f7a9ed-017f-484b-9906-e7cb20598f6f" config-ref="HTTP_Listener_config" path="/catalog/flats/{id}" allowedMethods="DELETE" >
+			<http:response >
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:response>
+			<http:error-response >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:error-response>
+		</http:listener>
+		<ee:transform doc:name="Transform Message" doc:id="600d7054-8aa3-4402-8da0-8b96c56ff7d4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/xml skipNullOn="everywhere"
+ns ns0 http://se/ifmo/ru/firstservice/catalog
+---
+{
+	ns0#deleteFlatRequest: {
+		ns0#id: attributes.uriParams.id,
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<wsc:consume operation="deleteFlat" doc:name="Consume" doc:id="124bf169-224d-46f7-a1a5-05fc13899df0" config-ref="Web_Service_Consumer_Config" />
+		<ee:transform doc:name="Transform Message1" doc:id="15dc6ed2-b969-45ec-aab9-b461d43998b8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+ns ns0 http://se/ifmo/ru/firstservice/catalog
+
+output application/json
+---
+{
+	"code": payload.body.ns0#deleteFlatResponse.ns0#code,
+	"message": payload.body.ns0#deleteFlatResponse.ns0#message,
+	"time": payload.body.ns0#deleteFlatResponse.ns0#time
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="c0df0686-e62f-46de-9e46-99890e146f32" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="4ba35f52-86fb-4ad8-b1ec-44ca0e98c624" type="ANY" >
+				<ee:transform doc:name="Transform Message" doc:id="743aae49-fe63-4e96-a1ea-fb4229cf40b0" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var detail = read(error.exception.cause.detail, "application/xml")
+---
+{
+	"code": detail.detail.code,
+	"message": detail.detail.description,
+	"time": now()
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="fe7d69dc-24df-4a81-bbe0-fc2c90f00090" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="catalogFlatDeleteViewOptions" doc:id="850adc4c-9dcb-459e-96ea-57db03dee224">
+		<http:listener doc:name="Listener" doc:id="7442b2b9-082b-4b05-83d2-b2ed76594409" config-ref="HTTP_Listener_config" path="/catalog/flats/delete-one-by-view/{view}" allowedMethods="OPTIONS">
+			<http:response>
+				<http:headers><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "*",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:response>
+			<http:error-response>
+				<http:body><![CDATA[#[payload]]]></http:body>
+				<http:headers><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:error-response>
+		</http:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="c9ebc472-05cd-4cee-b90b-4d9f6819cec4" />
+	</flow>
+	<flow name="deleteByViewFlat" doc:id="d952eb04-86ce-4ff1-af36-9231ff3282f0" >
+		<http:listener doc:name="Listener" doc:id="1a73fd54-8e17-432e-ad73-7f874d5484d7" config-ref="HTTP_Listener_config" path="/catalog/flats/delete-one-by-view/{view}" allowedMethods="DELETE" >
+			<http:response>
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:response>
+			<http:error-response >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:error-response>
+		</http:listener>
+		<ee:transform doc:name="Transform Message" doc:id="ecf2591f-5601-4d09-b059-5683b6a3a8f5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/xml skipNullOn="everywhere"
+ns ns0 http://se/ifmo/ru/firstservice/catalog
+---
+{
+	ns0#deleteFlatByViewRequest: {
+		ns0#view: attributes.uriParams.view,
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<wsc:consume operation="deleteFlatByView" doc:name="Consume" doc:id="a1389c15-f3f3-4f77-82f0-2bd79519445c" config-ref="Web_Service_Consumer_Config" />
+		<ee:transform doc:name="Transform Message1" doc:id="03ab0aac-c345-49ce-81b0-388671fd9576" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+ns ns0 http://se/ifmo/ru/firstservice/catalog
+
+output application/json
+---
+{
+	"code": payload.body.ns0#deleteFlatByViewResponse.ns0#code,
+	"message": payload.body.ns0#deleteFlatByViewResponse.ns0#message,
+	"time": payload.body.ns0#deleteFlatByViewResponse.ns0#time
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="5617ea65-6806-455e-930e-0ee56c0aea47" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="26d81153-c13b-46ca-9230-33b4de534dad" type="ANY" >
+				<ee:transform doc:name="Transform Message" doc:id="e4502f57-c326-485c-9248-0faedb848b97" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var detail = read(error.exception.cause.detail, "application/xml")
+---
+{
+	"code": detail.detail.code,
+	"message": detail.detail.description,
+	"time": now()
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="8e9af21d-7ec1-40af-bd41-d7d738e8977f" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="averageTimeMetro" doc:id="3c82669b-b589-4763-bbb8-752c6e694fba" >
+		<http:listener doc:name="Listener" doc:id="972ddb0b-47b4-4e85-bd14-58a2ba329638" config-ref="HTTP_Listener_config" path="/catalog/flats/average-time-metro" allowedMethods="GET" >
+			<http:response >
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:response>
+			<http:error-response >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:error-response>
+		</http:listener>
+		<ee:transform doc:name="Transform Message" doc:id="61eeca72-9549-4ee0-861d-ea55c8a68d17" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/xml skipNullOn="everywhere"
+ns ns0 http://se/ifmo/ru/firstservice/catalog
+---
+{
+	ns0#getFlatsAverageTimeMetroRequest: {
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<wsc:consume operation="getFlatsAverageTimeMetro" doc:name="Consume" doc:id="aa3ca478-3783-4663-93fd-0db1e49e5a74" config-ref="Web_Service_Consumer_Config" />
+		<ee:transform doc:name="Transform Message1" doc:id="c2444199-e939-421c-8975-219ee05981b1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+ns ns0 http://se/ifmo/ru/firstservice/catalog
+
+output application/json
+---
+payload.body.ns0#getFlatsAverageTimeMetroResponse.ns0#number]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="e9d2d52c-2622-4478-ba71-5011accdea43" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0d49b0b7-8d84-4d35-96b5-ba741a7d3f99" type="ANY" >
+				<ee:transform doc:name="Transform Message" doc:id="63262528-1618-494f-b446-3d7af06f34b7" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var detail = read(error.exception.cause.detail, "application/xml")
+---
+{
+	"code": detail.detail.code,
+	"message": detail.detail.description,
+	"time": now()
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="f454f233-b0a3-4941-8b92-104b30b3017c" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="uniqueView" doc:id="ccec38ce-0af3-492e-9e57-ef0b482164ef" >
+		<http:listener doc:name="Listener" doc:id="38a96f84-6e4e-4111-a854-6240c93f692a" config-ref="HTTP_Listener_config" path="/catalog/flats/unique-view" allowedMethods="GET" >
+			<http:response >
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:response>
+			<http:error-response >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "GET, PUT, POST, DELETE, HEAD, OPTIONS",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:error-response>
+		</http:listener>
+		<ee:transform doc:name="Transform Message" doc:id="071816e9-66a2-4270-9020-336677dd69b8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/xml skipNullOn="everywhere"
+ns ns0 http://se/ifmo/ru/firstservice/catalog
+---
+{
+	ns0#getUniqueFlatViewRequest: {
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<wsc:consume operation="getUniqueFlatView" doc:name="Consume" doc:id="844868de-0253-415e-9e00-d6b5a684c7e1" config-ref="Web_Service_Consumer_Config" />
+		<ee:transform doc:name="Transform Message1" doc:id="956bee90-d3e9-4c2f-8467-67ed561d9bfb" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+ns ns0 http://se/ifmo/ru/firstservice/catalog
+
+output application/json
+---
+payload.body.ns0#getUniqueFlatViewResponse.*ns0#viewList map (item, index) -> item
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="f57183ab-885a-4887-8fca-b74650352954" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a7e84b5c-1ac7-47fb-94d8-dcef6d5b50e4" type="ANY" >
+				<ee:transform doc:name="Transform Message" doc:id="2100266a-59aa-4729-b33b-be94e0a2eea0" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var detail = read(error.exception.cause.detail, "application/xml")
+---
+{
+	"code": detail.detail.code,
+	"message": detail.detail.description,
+	"time": now()
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="41fa576a-2174-439d-98da-3ea2188323e8" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="catalogFlatOptions" doc:id="8453abad-fb03-4c0a-80c2-30c9ea934544" >
+		<http:listener doc:name="Listener" doc:id="e4a698a6-0384-4885-8ade-de2b44dbf68b" config-ref="HTTP_Listener_config" path="/catalog/flats/{id}" allowedMethods="OPTIONS" >
+			<http:response >
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origin" : "*",
+	"Access-Control-Allow-Methods" : "*",
+	"Access-Control-Allow-Headers" : "*",
+	"Access-Control-Allow-Credentials" : "true"
+}]]]></http:headers>
+			</http:response>
+			<http:error-response >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="ad1386de-bbef-4622-8f55-cf20052b7e6c" />
+	</flow>
+</mule>
