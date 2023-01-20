@@ -3,11 +3,12 @@ package se.ifmo.ru.firstservice.service.model;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
 @RequiredArgsConstructor
-public enum View {
+public enum View implements Serializable {
     STREET("street"),
     PARK("park"),
     BAD("bad"),

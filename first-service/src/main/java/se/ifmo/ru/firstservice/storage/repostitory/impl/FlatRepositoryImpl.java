@@ -219,7 +219,7 @@ public class FlatRepositoryImpl implements FlatRepository {
     @Override
     @Transactional
     public boolean deleteByView(View view) {
-        long id;
+        long id = 0;
 
         try {
             id = (long) entityManager.createQuery("SELECT f.id FROM flat f WHERE f.view=:view")
@@ -248,7 +248,15 @@ public class FlatRepositoryImpl implements FlatRepository {
 
     @Override
     public List<String> getUniqueView() {
-        return entityManager.createQuery("SELECT DISTINCT f.view FROM flat f").getResultList();
+        List<View> resultQuery = entityManager.createQuery("SELECT DISTINCT f.view FROM flat f").getResultList();
+
+        List<String> result = new ArrayList<>();
+
+        for (View v : resultQuery){
+            result.add(v.toString());
+        }
+
+        return result;
     }
 
     private Object getTypedFieldValue(String fieldName, String fieldValue) {

@@ -3,6 +3,8 @@ package se.ifmo.ru.firstservice.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
+import se.ifmo.ru.firstservice.catalog.AddFlatRequest;
+import se.ifmo.ru.firstservice.catalog.FlatUpdateOrAddDto;
 import se.ifmo.ru.firstservice.service.model.Coordinates;
 import se.ifmo.ru.firstservice.service.model.Flat;
 import se.ifmo.ru.firstservice.service.model.House;
@@ -17,6 +19,16 @@ import java.util.List;
 public interface FlatMapper {
     FlatGetResponseDto toDto(Flat source);
     List<FlatGetResponseDto> toGetResponseDtoList(List<Flat> source);
+
+    List<se.ifmo.ru.firstservice.catalog.FlatGetResponseDto> toGetResponseDtoListResponse(List<FlatGetResponseDto> source);
+
+    se.ifmo.ru.firstservice.catalog.FlatGetResponseDto toGetResponseDto(Flat source);
+
+    se.ifmo.ru.firstservice.catalog.FlatGetResponseDto toGetResponseDtoResponse(FlatGetResponseDto source);
+
+    FlatAddOrUpdateRequestDto toFlatAddOrUpdateRequestDto(FlatUpdateOrAddDto source);
+
+    FlatAddOrUpdateRequestDto toFlatAddOrUpdateRequestDto(AddFlatRequest source);
 
     @Mapping(target = "view", qualifiedByName = "viewConverter")
     FlatEntity fromFlatRequestDto(FlatAddOrUpdateRequestDto requestDto);
